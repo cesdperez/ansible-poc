@@ -1,0 +1,5 @@
+---
+cf:
+  gateway: https://api.cloud.pcftest.com
+  domain: cloud.pcftest.com
+  org: Horizontal Data Core

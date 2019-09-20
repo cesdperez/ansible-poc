@@ -1,0 +1,7 @@
+---
+buildpack:
+  version: 4.21
+some_flag: asdf
+application:
+  name: wiremock-improvementws
+  version: 1.0

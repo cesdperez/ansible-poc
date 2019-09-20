@@ -1,0 +1,45 @@
+---
+# This playbook deploys Wiremock to CF
+
+- hosts: localhost
+  vars_files:
+    - configurations/secrets.yml
+    - configurations/{{ org }}/vars.yml
+    - configurations/{{ org }}/{{ space }}/vars.yml
+  tasks:
+
+  - name: download Wiremock
+    get_url:
+      url: http://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-standalone/2.24.1/wiremock-standalone-2.24.1.jar
+      dest: ./wiremock.jar
+
+  - name: generate manifest
+    template:
+      src: cf-wiremock-manifest.j2
+      dest: cf-wiremock-manifest.yml
+
+  - name: login to CF {{ cf.org }} - {{ space }}
+    shell: cf login --skip-ssl-validation -a '{{ cf.gateway }}' -o '{{ cf.org }}' -s '{{ space }}' -u '{{ cf_user }}' -p '{{ cf_password }}'
+    no_log: true
+
+  - name: push Wiremock to CF
+    shell: cf push -f cf-wiremock-manifest.yml
+    
+  - name: perform smoke test
+    uri:
+      url: https://{{ application.name }}.{{ cf.domain }}/health
+      status_code: 404
+    ignore_errors: yes
+    register: result
+
+  - name: switch CF route
+    shell: echo 'switching route'
+    when: result is succeeded
+
+  - name: cleanup files
+    file:
+      path: "{{ item }}"  
+      state: absent
+    with_items:
+      - cf-wiremock-manifest.yml
+      - wiremock.jar

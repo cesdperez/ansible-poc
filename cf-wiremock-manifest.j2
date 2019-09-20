@@ -1,0 +1,16 @@
+---
+applications:
+- name: {{ application.name }}
+  memory: 1G
+  instances: 1
+  stack: cflinuxfs3
+  path: ./wiremock.jar
+  buildpacks:
+    - https://github.com/cloudfoundry/java-buildpack.git#v{{ buildpack.version }}
+  env:
+    SPACE: {{ space }}
+    SOME_FLAG: {{ some_flag }}
+    APPLICATION_VERSION: {{ application.version }}
+    {% if optional_var is defined %}
+    OPTIONAL_VAR: {{ optional_var }}
+    {% endif %}
